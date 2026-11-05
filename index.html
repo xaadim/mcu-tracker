@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html lang="fr" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MCU Marvel Chronological Tracker</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+          },
+          colors: {
+            marvel: {
+              red: '#E62429',
+              darkRed: '#991115',
+              dark: '#0f0f11',
+              card: '#18181c',
+              border: '#2a2a32',
+              accent: '#f32d32'
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    ::-webkit-scrollbar {
+      width: 8px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #0f0f11;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #2a2a32;
+      border-radius: 4px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #e62429;
+    }
+    .hero-gradient {
+      background: linear-gradient(180deg, rgba(230, 36, 41, 0.18) 0%, rgba(15, 15, 17, 0) 100%);
+    }
+  </style>
+</head>
+<body class="bg-marvel-dark text-gray-100 min-h-screen font-sans flex flex-col antialiased selection:bg-marvel-red selection:text-white">
+
+  <!-- Header -->
+  <header class="hero-gradient border-b border-marvel-border relative overflow-hidden">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-10">
+      <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
+        <div>
+          <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-marvel-red/10 border border-marvel-red/30 text-marvel-red text-xs font-bold uppercase tracking-widest mb-3">
+            <span class="w-2 h-2 rounded-full bg-marvel-red animate-pulse"></span>
+            Chronologie Officielle (46 Œuvres)
+          </div>
+          <h1 class="text-3xl sm:text-5xl font-black tracking-tight text-white flex items-center gap-3">
+            MARVEL <span class="text-transparent bg-clip-text bg-gradient-to-r from-marvel-red to-orange-500">TRACKER</span>
+          </h1>
+          <p class="text-gray-400 mt-2 text-sm sm:text-base max-w-xl">
+            Suivez votre progression dans le MCU en ordre chronologique. Votre progression est enregistrée automatiquement.
+          </p>
+        </div>
+
+        <!-- Progress Box -->
+        <div class="bg-marvel-card border border-marvel-border p-5 rounded-2xl shadow-2xl min-w-[280px] sm:min-w-[320px]">
+          <div class="flex items-center justify-between mb-2">
+            <span class="text-xs font-semibold uppercase tracking-wider text-gray-400">Progression Totale</span>
+            <span id="progress-percentage" class="text-sm font-black text-marvel-red">0%</span>
+          </div>
+          <div class="w-full bg-marvel-border h-3 rounded-full overflow-hidden p-0.5 mb-3">
+            <div id="progress-bar" class="bg-gradient-to-r from-marvel-darkRed to-marvel-red h-full rounded-full transition-all duration-300 ease-out w-0"></div>
+          </div>
+          <div class="flex justify-between text-xs text-gray-400 font-medium">
+            <span>Visionnés : <strong id="watched-count" class="text-white font-bold">0</strong> / <span id="total-count">46</span></span>
+            <span id="remaining-count">46 restants</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Controls -->
+  <main class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex-1 w-full">
+
+    <div class="bg-marvel-card border border-marvel-border rounded-2xl p-4 mb-8 shadow-lg flex flex-col md:flex-row items-center justify-between gap-4">
+      
+      <!-- Search Input -->
+      <div class="relative w-full md:w-80">
+        <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-gray-400">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 4114 0z"></path>
+          </svg>
+        </div>
+        <input type="text" id="search-input" placeholder="Rechercher un film, une série..." 
+          class="w-full pl-10 pr-4 py-2 bg-marvel-dark border border-marvel-border rounded-xl text-sm text-white placeholder-gray-500 focus:outline-none focus:border-marvel-red focus:ring-1 focus:ring-marvel-red transition-all">
+      </div>
+
+      <!-- Filters -->
+      <div class="flex flex-wrap items-center gap-2 w-full md:w-auto justify-between md:justify-end">
+        
+        <!-- Status Filter -->
+        <div class="flex bg-marvel-dark p-1 rounded-xl border border-marvel-border text-xs font-medium">
+          <button data-filter-status="all" class="filter-status-btn px-3 py-1.5 rounded-lg transition-all bg-marvel-red text-white shadow font-semibold">Tous</button>
+          <button data-filter-status="unwatched" class="filter-status-btn px-3 py-1.5 rounded-lg text-gray-400 hover:text-white transition-all">À voir</button>
+          <button data-filter-status="watched" class="filter-status-btn px-3 py-1.5 rounded-lg text-gray-400 hover:text-white transition-all">Vus</button>
+        </div>
+
+        <!-- Type Filter -->
+        <div class="flex bg-marvel-dark p-1 rounded-xl border border-marvel-border text-xs font-medium">
+          <button data-filter-type="all" class="filter-type-btn px-3 py-1.5 rounded-lg transition-all bg-gray-700 text-white shadow font-semibold">Tout</button>
+          <button data-filter-type="Film" class="filter-type-btn px-3 py-1.5 rounded-lg text-gray-400 hover:text-white transition-all">Films</button>
+          <button data-filter-type="Série" class="filter-type-btn px-3 py-1.5 rounded-lg text-gray-400 hover:text-white transition-all">Séries</button>
+        </div>
+
+        <!-- Reset Button -->
+        <button id="reset-btn" title="Réinitialiser la progression" class="p-2 bg-marvel-dark hover:bg-marvel-red/20 border border-marvel-border hover:border-marvel-red/40 text-gray-400 hover:text-marvel-red rounded-xl transition-all">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+          </svg>
+        </button>
+      </div>
+    </div>
+
+    <!-- Container Grid -->
+    <div id="mcu-list" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"></div>
+
+    <!-- Empty State -->
+    <div id="empty-state" class="hidden text-center py-16 bg-marvel-card rounded-2xl border border-marvel-border my-6">
+      <svg class="w-12 h-12 mx-auto text-gray-600 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9.75 9.75l4.5 4.5m0-4.5l-4.5 4.5M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+      </svg>
+      <h3 class="text-base font-bold text-white mb-1">Aucun résultat trouvé</h3>
+      <p class="text-gray-400 text-xs">Modifiez la recherche ou vos filtres.</p>
+    </div>
+
+  </main>
+
+  <footer class="border-t border-marvel-border bg-marvel-card py-6 text-center text-xs text-gray-500">
+    <p>MCU Chronological Watch Tracker — Application ultra-fiable avec sauvegarde automatique.</p>
+  </footer>
+
+  <script>
+    // Complete 46 MCU Items List
+    const mcuData = [
+      { id: 1, title: "Captain America : First Avenger", type: "Film", platform: "Disney+" },
+      { id: 2, title: "Marvel's Agent Carter", type: "Série", platform: "Disney+" },
+      { id: 3, title: "Captain Marvel", type: "Film", platform: "Disney+" },
+      { id: 4, title: "Iron Man", type: "Film", platform: "Disney+" },
+      { id: 5, title: "Iron Man 2", type: "Film", platform: "Disney+" },
+      { id: 6, title: "L'Incroyable Hulk", type: "Film", platform: "VOD" },
+      { id: 7, title: "Thor", type: "Film", platform: "Disney+" },
+      { id: 8, title: "Avengers", type: "Film", platform: "Disney+" },
+      { id: 9, title: "Iron Man 3", type: "Film", platform: "Disney+" },
+      { id: 10, title: "Thor : Le Monde des Ténèbres", type: "Film", platform: "Disney+" },
+      { id: 11, title: "Captain America : Le Soldat de l'Hiver", type: "Film", platform: "Disney+" },
+      { id: 12, title: "Les Gardiens de la Galaxie", type: "Film", platform: "Disney+" },
+      { id: 13, title: "Les Gardiens de la Galaxie Vol. 2", type: "Film", platform: "Disney+" },
+      { id: 14, title: "Avengers : L'Ère d'Ultron", type: "Film", platform: "Disney+" },
+      { id: 15, title: "Ant-Man", type: "Film", platform: "Disney+" },
+      { id: 16, title: "Captain America : Civil War", type: "Film", platform: "Disney+" },
+      { id: 17, title: "Black Widow", type: "Film", platform: "Disney+" },
+      { id: 18, title: "Black Panther", type: "Film", platform: "Disney+" },
+      { id: 19, title: "Spider-Man: Homecoming", type: "Film", platform: "Disney+ / Netflix / VOD" },
+      { id: 20, title: "Doctor Strange", type: "Film", platform: "Disney+" },
+      { id: 21, title: "Thor : Ragnarok", type: "Film", platform: "Disney+" },
+      { id: 22, title: "Ant-Man et la Guêpe", type: "Film", platform: "Disney+" },
+      { id: 23, title: "Avengers: Infinity War", type: "Film", platform: "Disney+" },
+      { id: 24, title: "Avengers: Endgame", type: "Film", platform: "Disney+" },
+      { id: 25, title: "WandaVision", type: "Série", platform: "Disney+" },
+      { id: 26, title: "Falcon et le Soldat de l'Hiver", type: "Série", platform: "Disney+" },
+      { id: 27, title: "Loki (Saison 1)", type: "Série", platform: "Disney+" },
+      { id: 28, title: "Shang-Chi et la Légende des Dix Anneaux", type: "Film", platform: "Disney+" },
+      { id: 29, title: "Eternals", type: "Film", platform: "Disney+" },
+      { id: 30, title: "Spider-Man: Far From Home", type: "Film", platform: "Netflix / VOD" },
+      { id: 31, title: "Spider-Man: No Way Home", type: "Film", platform: "Netflix / VOD" },
+      { id: 32, title: "Doctor Strange in the Multiverse of Madness", type: "Film", platform: "Disney+" },
+      { id: 33, title: "Moon Knight", type: "Série", platform: "Disney+" },
+      { id: 34, title: "Thor: Love and Thunder", type: "Film", platform: "Disney+" },
+      { id: 35, title: "She-Hulk : Avocate", type: "Série", platform: "Disney+" },
+      { id: 36, title: "Ms. Marvel", type: "Série", platform: "Disney+" },
+      { id: 37, title: "Black Panther: Wakanda Forever", type: "Film", platform: "Disney+" },
+      { id: 38, title: "Hawkeye", type: "Série", platform: "Disney+" },
+      { id: 39, title: "Ant-Man et la Guêpe : Quantumania", type: "Film", platform: "Disney+" },
+      { id: 40, title: "Les Gardiens de la Galaxie Vol. 3", type: "Film", platform: "Disney+" },
+      { id: 41, title: "Secret Invasion", type: "Série", platform: "Disney+" },
+      { id: 42, title: "Loki (Saison 2)", type: "Série", platform: "Disney+" },
+      { id: 43, title: "The Marvels", type: "Film", platform: "Disney+" },
+      { id: 44, title: "Echo", type: "Série", platform: "Disney+" },
+      { id: 45, title: "Agatha All Along", type: "Série", platform: "Disney+" },
+      { id: 46, title: "Deadpool & Wolverine", type: "Film", platform: "Disney+" }
+    ];
+
+    const STORAGE_KEY = 'mcu_tracker_progress_v2';
+
+    // In-memory state tracking
+    let watchedIds = new Set();
+    let currentStatusFilter = 'all';
+    let currentTypeFilter = 'all';
+    let searchQuery = '';
+
+    // Load from LocalStorage securely
+    function loadSavedData() {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if (raw) {
+          const arr = JSON.parse(raw);
+          if (Array.isArray(arr)) {
+            watchedIds = new Set(arr.map(Number));
+          }
+        }
+      } catch (e) {
+        console.error("Erreur de lecture LocalStorage:", e);
+      }
+    }
+
+    // Save to LocalStorage securely
+    function saveData() {
+      try {
+        const arr = Array.from(watchedIds);
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(arr));
+      } catch (e) {
+        console.error("Erreur de sauvegarde LocalStorage:", e);
+      }
+      updateProgressUI();
+    }
+
+    // Helper badges
+    function getPlatformBadge(platform) {
+      if (platform.includes('Disney+')) {
+        return `<span class="px-2 py-0.5 text-[11px] font-medium rounded bg-blue-950/80 text-blue-300 border border-blue-800/50">${platform}</span>`;
+      } else if (platform.includes('Netflix')) {
+        return `<span class="px-2 py-0.5 text-[11px] font-medium rounded bg-red-950/80 text-red-300 border border-red-800/50">${platform}</span>`;
+      }
+      return `<span class="px-2 py-0.5 text-[11px] font-medium rounded bg-amber-950/80 text-amber-300 border border-amber-800/50">${platform}</span>`;
+    }
+
+    function getTypeBadge(type) {
+      if (type === 'Film') {
+        return `<span class="px-2 py-0.5 text-[10px] uppercase font-bold rounded bg-marvel-red/20 text-marvel-red border border-marvel-red/30">Film</span>`;
+      }
+      return `<span class="px-2 py-0.5 text-[10px] uppercase font-bold rounded bg-purple-500/20 text-purple-300 border border-purple-500/30">Série</span>`;
+    }
+
+    function updateProgressUI() {
+      const total = mcuData.length;
+      const watched = watchedIds.size;
+      const pct = Math.round((watched / total) * 100);
+
+      document.getElementById('watched-count').textContent = watched;
+      document.getElementById('total-count').textContent = total;
+      document.getElementById('remaining-count').textContent = `${total - watched} restants`;
+      document.getElementById('progress-percentage').textContent = `${pct}%`;
+      document.getElementById('progress-bar').style.width = `${pct}%`;
+    }
+
+    function applyFiltersAndRender() {
+      const container = document.getElementById('mcu-list');
+      const emptyState = document.getElementById('empty-state');
+      
+      let visibleCount = 0;
+
+      mcuData.forEach(item => {
+        const card = document.getElementById(`mcu-card-${item.id}`);
+        if (!card) return;
+
+        const isWatched = watchedIds.has(item.id);
+
+        // Status filter
+        let showByStatus = true;
+        if (currentStatusFilter === 'watched' && !isWatched) showByStatus = false;
+        if (currentStatusFilter === 'unwatched' && isWatched) showByStatus = false;
+
+        // Type filter
+        let showByType = true;
+        if (currentTypeFilter !== 'all' && item.type !== currentTypeFilter) showByType = false;
+
+        // Search query
+        let showBySearch = true;
+        if (searchQuery.trim() !== '') {
+          const q = searchQuery.toLowerCase();
+          showBySearch = item.title.toLowerCase().includes(q) || item.type.toLowerCase().includes(q);
+        }
+
+        if (showByStatus && showByType && showBySearch) {
+          card.classList.remove('hidden');
+          visibleCount++;
+        } else {
+          card.classList.add('hidden');
+        }
+
+        // Sync visual checkbox state
+        const checkbox = card.querySelector('.item-checkbox');
+        const titleEl = card.querySelector('.item-title');
+        
+        if (checkbox) checkbox.checked = isWatched;
+        if (titleEl) {
+          if (isWatched) {
+            titleEl.classList.add('line-through', 'text-gray-400');
+            card.classList.add('opacity-75', 'bg-marvel-card/60');
+          } else {
+            titleEl.classList.remove('line-through', 'text-gray-400');
+            card.classList.remove('opacity-75', 'bg-marvel-card/60');
+          }
+        }
+      });
+
+      if (visibleCount === 0) {
+        emptyState.classList.remove('hidden');
+      } else {
+        emptyState.classList.add('hidden');
+      }
+    }
+
+    // Generate Cards DOM once on startup
+    function buildCardsDOM() {
+      const container = document.getElementById('mcu-list');
+      container.innerHTML = '';
+
+      mcuData.forEach(item => {
+        const isWatched = watchedIds.has(item.id);
+        const card = document.createElement('div');
+        card.id = `mcu-card-${item.id}`;
+        card.className = `bg-marvel-card border border-marvel-border rounded-2xl p-4 transition-all duration-200 hover:border-marvel-red/50 ${
+          isWatched ? 'opacity-75 bg-marvel-card/60' : ''
+        }`;
+
+        card.innerHTML = `
+          <div class="flex items-start gap-3">
+            <label class="relative flex items-center justify-center mt-1 cursor-pointer select-none">
+              <input type="checkbox" data-id="${item.id}" ${isWatched ? 'checked' : ''} class="item-checkbox sr-only">
+              <div class="w-6 h-6 border-2 border-gray-500 rounded-lg transition-all flex items-center justify-center hover:border-marvel-red">
+                <svg class="w-4 h-4 text-marvel-red hidden check-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path>
+                </svg>
+              </div>
+            </label>
+
+            <div class="flex-1 min-w-0">
+              <div class="flex items-center gap-2 mb-1">
+                <span class="text-xs font-mono font-bold text-gray-500">#${item.id < 10 ? '0' + item.id : item.id}</span>
+                ${getTypeBadge(item.type)}
+              </div>
+
+              <h3 class="item-title text-base font-bold text-white leading-snug transition-colors ${
+                isWatched ? 'line-through text-gray-400' : ''
+              }">
+                ${item.title}
+              </h3>
+
+              <div class="mt-3">
+                ${getPlatformBadge(item.platform)}
+              </div>
+            </div>
+          </div>
+        `;
+
+        container.appendChild(card);
+      });
+    }
+
+    // Global Event Delegation for Checkboxes
+    document.addEventListener('change', (e) => {
+      if (e.target && e.target.classList.contains('item-checkbox')) {
+        const id = parseInt(e.target.dataset.id, 10);
+        if (e.target.checked) {
+          watchedIds.add(id);
+        } else {
+          watchedIds.delete(id);
+        }
+        saveData();
+        applyFiltersAndRender();
+      }
+    });
+
+    // Filter Listeners
+    document.querySelectorAll('.filter-status-btn').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        document.querySelectorAll('.filter-status-btn').forEach(b => {
+          b.className = 'filter-status-btn px-3 py-1.5 rounded-lg text-gray-400 hover:text-white transition-all';
+        });
+        e.target.className = 'filter-status-btn px-3 py-1.5 rounded-lg transition-all bg-marvel-red text-white shadow font-semibold';
+        currentStatusFilter = e.target.dataset.filterStatus;
+        applyFiltersAndRender();
+      });
+    });
+
+    document.querySelectorAll('.filter-type-btn').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        document.querySelectorAll('.filter-type-btn').forEach(b => {
+          b.className = 'filter-type-btn px-3 py-1.5 rounded-lg text-gray-400 hover:text-white transition-all';
+        });
+        e.target.className = 'filter-type-btn px-3 py-1.5 rounded-lg transition-all bg-gray-700 text-white shadow font-semibold';
+        currentTypeFilter = e.target.dataset.filterType;
+        applyFiltersAndRender();
+      });
+    });
+
+    document.getElementById('search-input').addEventListener('input', (e) => {
+      searchQuery = e.target.value;
+      applyFiltersAndRender();
+    });
+
+    document.getElementById('reset-btn').addEventListener('click', () => {
+      if (confirm('Voulez-vous vraiment réinitialiser toute votre progression MCU ?')) {
+        watchedIds.clear();
+        saveData();
+        applyFiltersAndRender();
+      }
+    });
+
+    // Custom CSS for checkmarks in checkboxes
+    const style = document.createElement('style');
+    style.innerHTML = `
+      .item-checkbox:checked + div {
+        background-color: #E62429 !important;
+        border-color: #E62429 !important;
+      }
+      .item-checkbox:checked + div .check-icon {
+        display: block !important;
+        color: white !important;
+      }
+    `;
+    document.head.appendChild(style);
+
+    // Initialization routine
+    function init() {
+      loadSavedData();
+      buildCardsDOM();
+      updateProgressUI();
+      applyFiltersAndRender();
+    }
+
+    window.addEventListener('DOMContentLoaded', init);
+    if (document.readyState === 'complete' || document.readyState === 'interactive') {
+      init();
+    }
+  </script>
+</body>
+</html>
