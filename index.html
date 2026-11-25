@@ -35,6 +35,8 @@ h1{font-family:Impact,"Arial Narrow",sans-serif;letter-spacing:.06em;font-size:c
 .c.v .ck{background:var(--ac);color:#fff;border-color:var(--ac)}
 .c.v .p{filter:grayscale(.7) brightness(.7)}
 .em{text-align:center;color:var(--mu);padding:40px 0;display:none}
+.c.hp .p b,.c.hp .p small{display:none}
+.c.hp .p{background-color:#000}
 </style>
 </head>
 <body>
@@ -46,7 +48,7 @@ h1{font-family:Impact,"Arial Narrow",sans-serif;letter-spacing:.06em;font-size:c
   <div class="ctl">
     <input id="q" type="search" placeholder="Rechercher…">
     <div class="seg" id="f1"><button data-v="all" class="on">Tous</button><button data-v="todo">À voir</button><button data-v="done">Vus</button></div>
-    <div class="seg" id="f2"><button data-v="all" class="on">Tout</button><button data-v="f">Films</button><button data-v="s">Séries</button></div>
+    <div class="seg" id="f2"><button data-v="all" class="on">Tout</button><button data-v="f">Films</button><button data-v="s">Séries</button><button data-v="n">Netflix</button></div>
   </div>
   <div class="g" id="g"></div>
   <div class="em" id="em"><b>Aucun résultat trouvé</b><br>Modifiez la recherche ou vos filtres.</div>
@@ -68,15 +70,28 @@ const D=[
 ["Captain America: Le Soldat de l’hiver",2014,"f"],
 ["Les Gardiens de la Galaxie",2014,"f"],
 ["Les Gardiens de la Galaxie Vol. 2",2017,"f"],
+["Daredevil (S1)",2015,"n","Début 2015"],
+["Jessica Jones (S1)",2015,"n","2015"],
 ["Avengers: L’Ère d’Ultron",2015,"f"],
 ["Ant-Man",2015,"f"],
 ["Captain America: Civil War",2016,"f"],
 ["Black Widow",2021,"f","Se déroule après Civil War"],
+["Daredevil (S2)",2016,"n"],
+["The Punisher (S1)",2017,"n"],
+["Luke Cage (S1)",2016,"n"],
+["Iron Fist (S1)",2017,"n"],
+["The Defenders",2017,"n"],
 ["Black Panther",2018,"f"],
 ["Spider-Man: Homecoming",2017,"f"],
 ["Doctor Strange",2016,"f"],
 ["Thor: Ragnarok",2017,"f"],
 ["Ant-Man et la Guêpe",2018,"f"],
+["Jessica Jones (S2)",2018,"n","Placement approximatif"],
+["Luke Cage (S2)",2018,"n","Placement approximatif"],
+["Iron Fist (S2)",2018,"n","Placement approximatif"],
+["The Punisher (S2)",2019,"n","Placement approximatif"],
+["Daredevil (S3)",2018,"n","Placement approximatif"],
+["Jessica Jones (S3)",2019,"n","Placement approximatif"],
 ["Avengers: Infinity War",2018,"f"],
 ["Avengers: Endgame",2019,"f"],
 ["Loki (S1–S2)",2021,"s","Placée après Endgame par Disney+"],
@@ -111,18 +126,19 @@ const D=[
 ["Marvel Zombies",2025,"s","Univers alternatif (suite de What If…?)"],
 ["Daredevil: Born Again (S2)",2026,"s"],
 ["Les 4 Fantastiques: Premiers Pas",2025,"f","Terre-828, hors chronologie principale"],
-["Spider-Man: Brand New Day",2026,"f"]
+["Spider-Man: Brand New Day",2026,"f"],
+["Avengers: Doomsday",2026,"c","Au cinéma : 16 déc. 2026 en France (18 déc. aux États-Unis) – placement dans la chronologie non confirmé"]
 ];
 const K="mcu-tracker-v2";let seen={};
 try{seen=JSON.parse(localStorage.getItem(K)||"{}")||{}}catch(e){seen={}}
 const st={q:"",a:"all",b:"all"};
 const g=document.getElementById("g");
-document.getElementById("sub").textContent="Chronologie officielle Disney+ ("+D.length+" œuvres) – progression enregistrée automatiquement.";
+document.getElementById("sub").textContent="Chronologie officielle ("+D.length+" œuvres) – progression enregistrée automatiquement.";
 D.forEach((d,i)=>{
   const c=document.createElement("div");c.className="c";c.dataset.i=i;
   const h=(i*7+350)%360;
   const poster=d[4]?"url("+d[4]+")":"linear-gradient(160deg,hsl("+h+",65%,38%),hsl("+((h+40)%360)+",70%,14%))";
-  c.innerHTML='<div class="p" style="background-image:'+poster+'"><span class="n">#'+(i+1)+'</span><span class="t">'+(d[2]=="f"?"Film":"Série")+'</span><b></b><small>'+d[1]+'</small></div><div class="nt"></div><div class="ck"></div>';
+  c.innerHTML='<div class="p" style="background-image:'+poster+'"><span class="n">#'+(i+1)+'</span><span class="t">'+(d[2]=="f"?"Film":d[2]=="n"?"Netflix":d[2]=="c"?"Cinéma":"Série")+'</span><b></b><small>'+d[1]+'</small></div><div class="nt"></div><div class="ck"></div>';
   c.querySelector("b").textContent=d[0];c.querySelector(".nt").textContent=d[3]||"";
   c.onclick=()=>{if(seen[i])delete seen[i];else seen[i]=1;try{localStorage.setItem(K,JSON.stringify(seen))}catch(e){}render()};
   g.appendChild(c);
@@ -133,7 +149,7 @@ function render(){
     const v=!!seen[i];if(v)n++;c.classList.toggle("v",v);
     c.querySelector(".ck").textContent=v?"✓ Vu":"Marquer comme vu";
     const d=D[i];
-    const ok=(st.a=="all"||(st.a=="done")==v)&&(st.b=="all"||d[2]==st.b)&&(!st.q||d[0].toLowerCase().includes(st.q));
+    const ok=(st.a=="all"||(st.a=="done")==v)&&(st.b=="all"||d[2]==st.b||(st.b=="s"&&d[2]=="n")||(st.b=="f"&&d[2]=="c"))&&(!st.q||d[0].toLowerCase().includes(st.q));
     c.style.display=ok?"":"none";if(ok)shown++;
   });
   const p=Math.round(n/D.length*100);
@@ -148,6 +164,37 @@ document.getElementById("q").oninput=e=>{st.q=e.target.value.trim().toLowerCase(
     [...b.parentNode.children].forEach(x=>x.classList.toggle("on",x==b));st[k]=b.dataset.v;render()};
 });
 render();
+
+// ===== Affiches TMDB (à héberger toi-même : clé API gratuite sur themoviedb.org) =====
+const TMDB_KEY="";   // optionnel : clé TMDB (v3). Vide = affiches via Wikipédia, sans clé
+const PK="mcu-posters-v1";let pc={};
+try{pc=JSON.parse(localStorage.getItem(PK)||"{}")||{}}catch(e){pc={}}
+function setPoster(i,path){const c=g.children[i];if(!c||!path)return;
+  c.querySelector(".p").style.backgroundImage="url("+(path[0]=="/"?"https://image.tmdb.org/t/p/w342"+path:path)+")";c.classList.add("hp")}
+async function loadPosters(){
+  for(let i=0;i<D.length;i++){
+    if(pc[i]){setPoster(i,pc[i]);continue}
+    const d=D[i],name=d[0].replace(/\s*\(.*?\)/,"").replace(/\*/g,"");
+    if(!TMDB_KEY){
+      try{
+        const q=name+(d[2]=="f"||d[2]=="c"?" film Marvel "+d[1]:" série télévisée Marvel");
+        const r=await(await fetch("https://fr.wikipedia.org/w/api.php?action=query&generator=search&gsrlimit=4&gsrsearch="+encodeURIComponent(q)+"&prop=pageimages&piprop=thumbnail&pithumbsize=342&format=json&origin=*")).json();
+        const ps=Object.values((r.query||{}).pages||{}).filter(p=>p.thumbnail).sort((a,b)=>a.index-b.index);
+        if(ps[0]){pc[i]=ps[0].thumbnail.source;setPoster(i,pc[i]);try{localStorage.setItem(PK,JSON.stringify(pc))}catch(e){}}
+      }catch(e){}
+      continue;
+    }
+    const kind=d[2]=="f"||d[2]=="c"?"movie":"tv";
+    const url="https://api.themoviedb.org/3/search/"+kind+"?api_key="+TMDB_KEY+"&language=fr-FR&query="+encodeURIComponent(name)+(kind=="movie"?"&year="+d[1]:"");
+    try{
+      const r=await(await fetch(url)).json();
+      const hit=(r.results||[]).find(x=>x.poster_path);
+      if(hit){pc[i]=hit.poster_path;setPoster(i,hit.poster_path);
+        try{localStorage.setItem(PK,JSON.stringify(pc))}catch(e){}}
+    }catch(e){}
+  }
+}
+loadPosters();
 </script>
 </body>
 </html>
