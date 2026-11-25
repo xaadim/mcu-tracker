@@ -36,7 +36,9 @@ h1{font-family:Impact,"Arial Narrow",sans-serif;letter-spacing:.06em;font-size:c
 .c.v .p{filter:grayscale(.7) brightness(.7)}
 .em{text-align:center;color:var(--mu);padding:40px 0;display:none}
 .c.hp .p b,.c.hp .p small{display:none}
-.c.hp .p{background-color:#000}
+.c.hp .p{background-color:#000;background-size:contain;background-repeat:no-repeat;background-position:center}
+.tt{display:none;padding:8px 10px 0;font-weight:600;font-size:.85rem;line-height:1.2}
+.c.hp .tt{display:block}
 </style>
 </head>
 <body>
@@ -133,13 +135,13 @@ const K="mcu-tracker-v2";let seen={};
 try{seen=JSON.parse(localStorage.getItem(K)||"{}")||{}}catch(e){seen={}}
 const st={q:"",a:"all",b:"all"};
 const g=document.getElementById("g");
-document.getElementById("sub").textContent="Chronologie officielle ("+D.length+" œuvres) – progression enregistrée automatiquement.";
+document.getElementById("sub").textContent="Chronologie officielle Disney+ ("+D.length+" œuvres) – progression enregistrée automatiquement.";
 D.forEach((d,i)=>{
   const c=document.createElement("div");c.className="c";c.dataset.i=i;
   const h=(i*7+350)%360;
   const poster=d[4]?"url("+d[4]+")":"linear-gradient(160deg,hsl("+h+",65%,38%),hsl("+((h+40)%360)+",70%,14%))";
-  c.innerHTML='<div class="p" style="background-image:'+poster+'"><span class="n">#'+(i+1)+'</span><span class="t">'+(d[2]=="f"?"Film":d[2]=="n"?"Netflix":d[2]=="c"?"Cinéma":"Série")+'</span><b></b><small>'+d[1]+'</small></div><div class="nt"></div><div class="ck"></div>';
-  c.querySelector("b").textContent=d[0];c.querySelector(".nt").textContent=d[3]||"";
+  c.innerHTML='<div class="p" style="background-image:'+poster+'"><span class="n">#'+(i+1)+'</span><span class="t">'+(d[2]=="f"?"Film":d[2]=="n"?"Netflix":d[2]=="c"?"Cinéma":"Série")+'</span><b></b><small>'+d[1]+'</small></div><div class="tt"></div><div class="nt"></div><div class="ck"></div>';
+  c.querySelector("b").textContent=d[0];c.querySelector(".tt").textContent=d[0]+" ("+d[1]+")";c.querySelector(".nt").textContent=d[3]||"";
   c.onclick=()=>{if(seen[i])delete seen[i];else seen[i]=1;try{localStorage.setItem(K,JSON.stringify(seen))}catch(e){}render()};
   g.appendChild(c);
 });
