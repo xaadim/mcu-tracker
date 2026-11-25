@@ -169,21 +169,26 @@ render();
 
 // ===== Affiches TMDB (à héberger toi-même : clé API gratuite sur themoviedb.org) =====
 const TMDB_KEY="";   // optionnel : clé TMDB (v3). Vide = affiches via Wikipédia, sans clé
-const PK="mcu-posters-v1";let pc={};
+const W={"Eyes of Wakanda": "Eyes of Wakanda", "Captain America: First Avenger": "Captain America: The First Avenger", "Captain Marvel": "Captain Marvel (film)", "Iron Man": "Iron Man (2008 film)", "Iron Man 2": "Iron Man 2", "L’Incroyable Hulk": "The Incredible Hulk (film)", "Thor": "Thor (2011 film)", "Avengers": "The Avengers (2012 film)", "Thor: Le Monde des ténèbres": "Thor: The Dark World", "Iron Man 3": "Iron Man 3", "Captain America: Le Soldat de l’hiver": "Captain America: The Winter Soldier", "Les Gardiens de la Galaxie": "Guardians of the Galaxy (film)", "Les Gardiens de la Galaxie Vol. 2": "Guardians of the Galaxy Vol. 2", "Daredevil (S1)": ["Daredevil season 1", "Daredevil (TV series)"], "Jessica Jones (S1)": ["Jessica Jones season 1", "Jessica Jones (TV series)"], "Avengers: L’Ère d’Ultron": "Avengers: Age of Ultron", "Ant-Man": "Ant-Man (film)", "Captain America: Civil War": "Captain America: Civil War", "Black Widow": "Black Widow (2021 film)", "Daredevil (S2)": ["Daredevil season 2", "Daredevil (TV series)"], "The Punisher (S1)": ["The Punisher season 1", "The Punisher (TV series)"], "Luke Cage (S1)": ["Luke Cage season 1", "Luke Cage (TV series)"], "Iron Fist (S1)": ["Iron Fist season 1", "Iron Fist (TV series)"], "The Defenders": ["The Defenders (miniseries)"], "Black Panther": "Black Panther (film)", "Spider-Man: Homecoming": "Spider-Man: Homecoming", "Doctor Strange": "Doctor Strange (2016 film)", "Thor: Ragnarok": "Thor: Ragnarok", "Ant-Man et la Guêpe": "Ant-Man and the Wasp", "Jessica Jones (S2)": ["Jessica Jones season 2", "Jessica Jones (TV series)"], "Luke Cage (S2)": ["Luke Cage season 2", "Luke Cage (TV series)"], "Iron Fist (S2)": ["Iron Fist season 2", "Iron Fist (TV series)"], "The Punisher (S2)": ["The Punisher season 2", "The Punisher (TV series)"], "Daredevil (S3)": ["Daredevil season 3", "Daredevil (TV series)"], "Jessica Jones (S3)": ["Jessica Jones season 3", "Jessica Jones (TV series)"], "Avengers: Infinity War": "Avengers: Infinity War", "Avengers: Endgame": "Avengers: Endgame", "Loki (S1–S2)": "Loki (TV series)", "What If…? (S1–S3)": "What If...? (TV series)", "WandaVision": "WandaVision", "Falcon et le Soldat de l’hiver": "The Falcon and the Winter Soldier", "Shang-Chi et la Légende des Dix Anneaux": "Shang-Chi and the Legend of the Ten Rings", "Les Éternels": "Eternals (film)", "Spider-Man: No Way Home": "Spider-Man: No Way Home", "Hawkeye": "Hawkeye (miniseries)", "Moon Knight": "Moon Knight (miniseries)", "Doctor Strange in the Multiverse of Madness": "Doctor Strange in the Multiverse of Madness", "Ms. Marvel": "Ms. Marvel (miniseries)", "Thor: Love and Thunder": "Thor: Love and Thunder", "Black Panther: Wakanda Forever": "Black Panther: Wakanda Forever", "I Am Groot": "I Am Groot", "Miss Hulk: Avocate": "She-Hulk: Attorney at Law", "Werewolf by Night": ["Werewolf by Night (special)", "Werewolf by Night (film)"], "Les Gardiens de la Galaxie: Spécial Fêtes": "The Guardians of the Galaxy Holiday Special", "Ant-Man et la Guêpe: Quantumania": "Ant-Man and the Wasp: Quantumania", "Les Gardiens de la Galaxie Vol. 3": "Guardians of the Galaxy Vol. 3", "Secret Invasion": "Secret Invasion (TV series)", "The Marvels": "The Marvels", "Echo": "Echo (miniseries)", "Deadpool & Wolverine": "Deadpool & Wolverine", "Agatha All Along": "Agatha All Along", "Daredevil: Born Again (S1)": "Daredevil: Born Again", "Captain America: Brave New World": "Captain America: Brave New World", "Ironheart": ["Ironheart (miniseries)", "Ironheart (TV series)"], "Thunderbolts*": "Thunderbolts*", "Wonder Man": ["Wonder Man (miniseries)", "Wonder Man (TV series)"], "Marvel Zombies": ["Marvel Zombies (miniseries)", "Marvel Zombies (TV series)"], "Daredevil: Born Again (S2)": ["Daredevil: Born Again season 2", "Daredevil: Born Again"], "Les 4 Fantastiques: Premiers Pas": "The Fantastic Four: First Steps", "Spider-Man: Brand New Day": "Spider-Man: Brand New Day", "Avengers: Doomsday": "Avengers: Doomsday"};
+// Pour forcer une affiche précise : OVERRIDE["Titre exact"]="https://…jpg"
+const OVERRIDE={};
+const PK="mcu-posters-v2";let pc={};
 try{pc=JSON.parse(localStorage.getItem(PK)||"{}")||{}}catch(e){pc={}}
 function setPoster(i,path){const c=g.children[i];if(!c||!path)return;
   c.querySelector(".p").style.backgroundImage="url("+(path[0]=="/"?"https://image.tmdb.org/t/p/w342"+path:path)+")";c.classList.add("hp")}
 async function loadPosters(){
   for(let i=0;i<D.length;i++){
+    if(OVERRIDE[D[i][0]]){setPoster(i,OVERRIDE[D[i][0]]);continue}
     if(pc[i]){setPoster(i,pc[i]);continue}
     const d=D[i],name=d[0].replace(/\s*\(.*?\)/,"").replace(/\*/g,"");
     if(!TMDB_KEY){
-      try{
-        const q=name+(d[2]=="f"||d[2]=="c"?" film Marvel "+d[1]:" série télévisée Marvel");
-        const r=await(await fetch("https://fr.wikipedia.org/w/api.php?action=query&generator=search&gsrlimit=4&gsrsearch="+encodeURIComponent(q)+"&prop=pageimages&piprop=thumbnail&pithumbsize=342&format=json&origin=*")).json();
-        const ps=Object.values((r.query||{}).pages||{}).filter(p=>p.thumbnail).sort((a,b)=>a.index-b.index);
-        if(ps[0]){pc[i]=ps[0].thumbnail.source;setPoster(i,pc[i]);try{localStorage.setItem(PK,JSON.stringify(pc))}catch(e){}}
-      }catch(e){}
+      for(const t of [].concat(W[d[0]]||[])){
+        try{
+          const r=await(await fetch("https://en.wikipedia.org/w/api.php?action=query&redirects=1&prop=pageimages&piprop=thumbnail&pithumbsize=342&pilicense=any&format=json&origin=*&titles="+encodeURIComponent(t))).json();
+          const p=Object.values((r.query||{}).pages||{})[0];
+          if(p&&p.thumbnail){pc[i]=p.thumbnail.source;setPoster(i,pc[i]);try{localStorage.setItem(PK,JSON.stringify(pc))}catch(e){}break}
+        }catch(e){}
+      }
       continue;
     }
     const kind=d[2]=="f"||d[2]=="c"?"movie":"tv";
